@@ -5,7 +5,7 @@ import (
 	"net"
 
 	constants "github.com/melsonic/gnats-server/constants"
-  core "github.com/melsonic/gnats-server/core"
+	core "github.com/melsonic/gnats-server/core"
 )
 
 func main() {
@@ -20,6 +20,6 @@ func main() {
 		if err != nil {
 			log.Fatalln("Error establishing a connection")
 		}
-    core.Handler(conn)
+		core.Handler(conn)
 	}
 }
