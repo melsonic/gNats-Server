@@ -16,7 +16,7 @@ func HandleSub(conn net.Conn, args []string) bool {
 	if err != nil {
 		return false
 	}
-	data.GSubjectSIDs.Add(subject, sid)
+	data.GSubjectSIDs.Add(conn, subject, sid)
 	var response string = "OK+\r\n"
 	conn.Write([]byte(response))
 	return true
