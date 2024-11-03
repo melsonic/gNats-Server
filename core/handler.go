@@ -24,6 +24,10 @@ func Handler(conn net.Conn) {
 			fmt.Println("Error reading from connection")
 		}
 		tokens := Parse(buffer)
+		if len(tokens) == 0 {
+			conn.Close()
+			return
+		}
 		/// handle initial CONNECT command
 		if !flag {
 			if tokens[0] == constants.CONNECT {
@@ -36,12 +40,19 @@ func Handler(conn net.Conn) {
 			}
 			continue
 		}
+		var commandResult bool = true
 		/// handle rest of the commands
 		switch tokens[0] {
 		case constants.PING:
 			commands.HandlePing(conn)
+		case constants.SUB:
+			commandResult = commands.HandleSub(conn, tokens[1:])
 		default:
 			/// throw error && close the connection
+			conn.Close()
+			return
+		}
+		if !commandResult {
 			conn.Close()
 			return
 		}

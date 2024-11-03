@@ -14,6 +14,7 @@ const (
 	PONG    string = "PONG"
 	PUB     string = "PUB"
 	SUB     string = "SUB"
+
 )
 
 var (
