@@ -7,7 +7,7 @@ import (
 	data "github.com/melsonic/gnats-server/data"
 )
 
-func HandleSub(conn net.Conn, args []string) bool {
+func HandleSub(conn net.Conn, args []string, channel chan string) bool {
 	if len(args) < 2 {
 		return false
 	}
@@ -16,8 +16,13 @@ func HandleSub(conn net.Conn, args []string) bool {
 	if err != nil {
 		return false
 	}
-	data.GSubjectSIDs.Add(conn, subject, sid)
-	var response string = "OK+\r\n"
+	success := data.GSubjectSIDs.Add(subject, sid, channel)
+	var response string
+	if success {
+		response = "+OK\r\n"
+	} else {
+		response = "\r\n"
+	}
 	conn.Write([]byte(response))
 	return true
 }

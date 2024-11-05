@@ -16,10 +16,9 @@ func main() {
 	}
 	for {
 		conn, err := listener.Accept()
-		defer conn.Close()
 		if err != nil {
 			log.Fatalln("Error establishing a connection")
 		}
-		core.Handler(conn)
+		go core.Handler(conn)
 	}
 }

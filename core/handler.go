@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"io"
 	"net"
 	"strings"
 
@@ -11,16 +12,24 @@ import (
 )
 
 func Handler(conn net.Conn) {
-	buffer := make([]byte, 1024)
+	defer conn.Close()
+	buffer := make([]byte, 4096)
 	var responseString string = util.BuildInitialResponseString(strings.Split(conn.RemoteAddr().String(), ":")[0])
 	var initialResponse []byte = []byte(responseString)
 	conn.Write(initialResponse)
-	/// first command should be CONNECT {} from client
-	var flag bool = false
+	channel := make(chan string)
+	success := true
+	go func() {
+		for {
+			msg := <-channel
+			conn.Write([]byte(msg))
+		}
+	}()
 	for {
 		util.ResetBuffer(buffer)
 		_, err := conn.Read(buffer)
-		if err != nil {
+		if err != nil && err != io.EOF {
+			fmt.Println(err.Error())
 			fmt.Println("Error reading from connection")
 		}
 		tokens := Parse(buffer)
@@ -28,31 +37,26 @@ func Handler(conn net.Conn) {
 			conn.Close()
 			return
 		}
-		/// handle initial CONNECT command
-		if !flag {
-			if tokens[0] == constants.CONNECT {
-				commands.HandleConnect(conn)
-				flag = true
-			} else {
-				/// throw the error && close the connection
-				conn.Close()
-				return
-			}
-			continue
-		}
-		var commandResult bool = true
-		/// handle rest of the commands
 		switch tokens[0] {
+		case constants.CONNECT:
+			fmt.Println("connect")
+			commands.HandleConnect(conn)
 		case constants.PING:
+			fmt.Println("ping")
 			commands.HandlePing(conn)
 		case constants.SUB:
-			commandResult = commands.HandleSub(conn, tokens[1:])
+			fmt.Println("sub")
+			success = commands.HandleSub(conn, tokens[1:], channel)
+		case constants.PUB:
+			fmt.Println("pub")
+			success = commands.HandlePub(conn, tokens[1:])
 		default:
 			/// throw error && close the connection
 			conn.Close()
 			return
 		}
-		if !commandResult {
+
+		if !success {
 			conn.Close()
 			return
 		}
