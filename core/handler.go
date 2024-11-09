@@ -4,19 +4,18 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"strings"
 
 	"github.com/melsonic/gnats-server/constants"
 	"github.com/melsonic/gnats-server/core/commands"
-	"github.com/melsonic/gnats-server/util"
+  "github.com/melsonic/gnats-server/util"
 )
 
 func Handler(conn net.Conn) {
 	defer conn.Close()
-	buffer := make([]byte, 4096)
-	var responseString string = util.BuildInitialResponseString(strings.Split(conn.RemoteAddr().String(), ":")[0])
-	var initialResponse []byte = []byte(responseString)
-	conn.Write(initialResponse)
+  /// send info message
+  util.SendInitialInfoMessage(conn)
+  /// variables
+	buffer := make([]byte, 100000)
 	channel := make(chan string)
 	success := true
 	go func() {
@@ -25,13 +24,14 @@ func Handler(conn net.Conn) {
 			conn.Write([]byte(msg))
 		}
 	}()
-	for {
-		util.ResetBuffer(buffer)
+	for success {
+		buffer = make([]byte, 100000)
 		_, err := conn.Read(buffer)
 		if err != nil && err != io.EOF {
 			fmt.Println(err.Error())
 			fmt.Println("Error reading from connection")
 		}
+		fmt.Printf("input -> ~%s~\n", string(buffer))
 		tokens := Parse(buffer)
 		if len(tokens) == 0 {
 			conn.Close()
@@ -39,26 +39,17 @@ func Handler(conn net.Conn) {
 		}
 		switch tokens[0] {
 		case constants.CONNECT:
-			fmt.Println("connect")
-			commands.HandleConnect(conn)
+			// commands.HandleConnect(conn)
 		case constants.PING:
-			fmt.Println("ping")
 			commands.HandlePing(conn)
 		case constants.SUB:
-			fmt.Println("sub")
 			success = commands.HandleSub(conn, tokens[1:], channel)
 		case constants.PUB:
-			fmt.Println("pub")
 			success = commands.HandlePub(conn, tokens[1:])
 		default:
 			/// throw error && close the connection
-			conn.Close()
-			return
-		}
-
-		if !success {
-			conn.Close()
-			return
+			// conn.Close()
+			// return
 		}
 	}
 }

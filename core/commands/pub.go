@@ -1,6 +1,8 @@
 package commands
 
 import (
+	"fmt"
+	"io"
 	"net"
 	"strconv"
 
@@ -18,7 +20,7 @@ func HandlePub(conn net.Conn, args []string) bool {
 	}
 	inputMsg := make([]byte, bytesLen+2) // adding 2 for CRLF bytes
 	_, err = conn.Read(inputMsg)
-	if err != nil {
+	if err != nil && err != io.EOF {
 		return false
 	}
 	// to remove 2 bytes for CRLF bytes

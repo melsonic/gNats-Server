@@ -1,8 +1,11 @@
 package commands
 
-import "net"
+import (
+	"net"
+
+	"github.com/melsonic/gnats-server/constants"
+)
 
 func HandlePing(conn net.Conn) {
-	var response string = "PONG\r\n"
-	conn.Write([]byte(response))
+	conn.Write([]byte(constants.RESPONSE_PONG))
 }

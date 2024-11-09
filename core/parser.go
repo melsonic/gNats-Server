@@ -8,6 +8,8 @@ package core
 // PUB CC 7
 // ronaldo
 import (
+	"fmt"
+
 	"github.com/melsonic/gnats-server/constants"
 )
 
@@ -17,7 +19,7 @@ func Parse(input []byte) []string {
 	for i := 0; i < len(input)-1; i++ {
 		if input[i] == constants.CR && input[i+1] == constants.LF {
 			tokens = append(tokens, current)
-			break
+      current = ""
 		}
 		if input[i] == constants.SPACE {
 			tokens = append(tokens, current)

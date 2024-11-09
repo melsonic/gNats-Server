@@ -15,6 +15,9 @@ const (
 	PUB     string = "PUB"
 	SUB     string = "SUB"
 
+	/// response
+	RESPONSE_OK   string = "+OK\r\n"
+	RESPONSE_PONG string = "PONG\r\n"
 )
 
 var (
