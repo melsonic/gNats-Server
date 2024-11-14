@@ -20,7 +20,7 @@ func (s *SubjectSID) Add(subject string, sid int, channel chan string) {
 	if ok {
 		for _, ch := range s.subSubscribers[subjectSid] {
 			if ch == channel {
-				return 
+				return
 			}
 		}
 	} else {
@@ -40,6 +40,19 @@ func (s *SubjectSID) Publish(subject string, msgLen int, msg []byte) {
 	for _, subscriber := range subsList {
 		subscriber <- response
 	}
+}
+
+func (s *SubjectSID) Unsub(sid int, channel chan string) {
+	s.mu.Lock()
+	subsList := s.subSubscribers[sid]
+	s.subSubscribers[sid] = nil
+	for _, subscriber := range subsList {
+		if subscriber == channel {
+			continue
+		}
+		s.subSubscribers[sid] = append(s.subSubscribers[sid], subscriber)
+	}
+	s.mu.Unlock()
 }
 
 var GSubjectSIDs SubjectSID = SubjectSID{subSid: make(map[string]int), subSubscribers: make(map[int][]chan string)}

@@ -30,13 +30,19 @@ const (
 	OP_S
 	OP_SU
 	OP_SUB
-	OP_SUB_ARG_SUB
-	OP_SUB_SUB_ID
+	OP_SUB_SUBJECT
+	OP_SUB_SUBJECT_ID
 	OP_PU
 	OP_PUB
 	OP_PUB_SUB
-	OP_PUB_MSG_LEN
 	OP_PUB_MSG
+	OP_PUB_MSG_LEN
+	OP_U
+	OP_UN
+	OP_UNS
+	OP_UNSU
+	OP_UNSUB
+	OP_UNSUB_SID
 )
 
 type pubConfig struct {
@@ -79,8 +85,9 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 				p.state = OP_P
 			case 's', 'S':
 				p.state = OP_S
+			case 'u', 'U':
+				p.state = OP_U
 			default:
-				// error
 				goto parseError
 			}
 		case OP_C:
@@ -88,7 +95,6 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 			case 'o', 'O':
 				p.state = OP_CO
 			default:
-				// error
 				goto parseError
 			}
 		case OP_CO:
@@ -96,7 +102,6 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 			case 'n', 'N':
 				p.state = OP_CON
 			default:
-				// error
 				goto parseError
 			}
 		case OP_CON:
@@ -104,7 +109,6 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 			case 'n', 'N':
 				p.state = OP_CONN
 			default:
-				// error
 				goto parseError
 			}
 		case OP_CONN:
@@ -112,7 +116,6 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 			case 'e', 'E':
 				p.state = OP_CONNE
 			default:
-				// error
 				goto parseError
 			}
 		case OP_CONNE:
@@ -120,7 +123,6 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 			case 'c', 'C':
 				p.state = OP_CONNEC
 			default:
-				// error
 				goto parseError
 			}
 		case OP_CONNEC:
@@ -128,7 +130,6 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 			case 't', 'T':
 				p.state = OP_CONNECT
 			default:
-				// error
 				goto parseError
 			}
 		case OP_CONNECT:
@@ -136,7 +137,6 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 			case ' ':
 				p.state = OP_CONNECT_ARG
 			default:
-				// error
 				goto parseError
 			}
 		case OP_CONNECT_ARG:
@@ -147,7 +147,6 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 				p.state = OP_START
 				err := config.connectConf.SetUpConnect(p.arg)
 				if err != nil {
-					// error
 					goto parseError
 				}
 				commands.ConnectHandler(config.connectConf.Verbose, config.channel)
@@ -161,7 +160,6 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 			case 'u', 'U':
 				p.state = OP_PU
 			default:
-				// error
 				goto parseError
 			}
 		case OP_S:
@@ -169,7 +167,6 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 			case 'u', 'U':
 				p.state = OP_SU
 			default:
-				// error
 				goto parseError
 			}
 		case OP_PI:
@@ -177,7 +174,6 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 			case 'n', 'N':
 				p.state = OP_PIN
 			default:
-				// error
 				goto parseError
 			}
 		case OP_PU:
@@ -185,7 +181,6 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 			case 'b', 'B':
 				p.state = OP_PUB
 			default:
-				// error
 				goto parseError
 			}
 		case OP_SU:
@@ -193,7 +188,6 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 			case 'b', 'B':
 				p.state = OP_SUB
 			default:
-				// error
 				goto parseError
 			}
 		case OP_PIN:
@@ -201,7 +195,6 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 			case 'g', 'G':
 				p.state = OP_PING
 			default:
-				// error
 				goto parseError
 			}
 		case OP_PUB:
@@ -211,7 +204,6 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 			case ' ', '\n':
 				p.state = OP_PUB_SUB
 			default:
-				// error
 				goto parseError
 			}
 		case OP_SUB:
@@ -219,10 +211,9 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 			case '\r':
 				// skip
 			case ' ', '\n':
-				p.state = OP_SUB_ARG_SUB
+				p.state = OP_SUB_SUBJECT
 				p.arg = nil
 			default:
-				// error
 				goto parseError
 			}
 		case OP_PING:
@@ -233,7 +224,6 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 				p.state = OP_START
 				commands.PingHandler(config.channel)
 			default:
-				// error
 				goto parseError
 			}
 		case OP_PUB_SUB:
@@ -248,12 +238,12 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 			default:
 				p.arg = append(p.arg, b)
 			}
-		case OP_SUB_ARG_SUB:
+		case OP_SUB_SUBJECT:
 			switch b {
 			case '\r':
 				// skip
 			case ' ', '\n':
-				p.state = OP_SUB_SUB_ID
+				p.state = OP_SUB_SUBJECT_ID
 				p.subState.subject = string(p.arg)
 				p.arg = nil
 			default:
@@ -267,7 +257,6 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 				p.state = OP_PUB_MSG
 				msgLen, err := strconv.Atoi(string(p.arg))
 				if err != nil {
-					// error
 					goto parseError
 				}
 				p.pubState.msgLen = msgLen
@@ -275,7 +264,7 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 			default:
 				p.arg = append(p.arg, b)
 			}
-		case OP_SUB_SUB_ID:
+		case OP_SUB_SUBJECT_ID:
 			switch b {
 			case '\r':
 				// skip
@@ -301,6 +290,57 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 				}
 				p.pubState.msg = p.arg
 				commands.PubHandler(config.connectConf.Verbose, p.pubState.subject, p.pubState.msgLen, p.pubState.msg, config.channel)
+			default:
+				p.arg = append(p.arg, b)
+			}
+		case OP_U:
+			switch b {
+			case 'n', 'N':
+				p.state = OP_UN
+			default:
+				goto parseError
+			}
+		case OP_UN:
+			switch b {
+			case 's', 'S':
+				p.state = OP_UNS
+			default:
+				goto parseError
+			}
+		case OP_UNS:
+			switch b {
+			case 'u', 'U':
+				p.state = OP_UNSU
+			default:
+				goto parseError
+			}
+		case OP_UNSU:
+			switch b {
+			case 'b', 'B':
+				p.state = OP_UNSUB
+			default:
+				goto parseError
+			}
+		case OP_UNSUB:
+			switch b {
+			case '\r':
+				// skip
+			case ' ', '\n':
+				p.state = OP_UNSUB_SID
+			default:
+				goto parseError
+			}
+		case OP_UNSUB_SID:
+			switch b {
+			case '\r':
+			// skip
+			case ' ', '\n':
+				p.state = OP_START
+				sid, err := strconv.Atoi(string(p.arg))
+				if err != nil {
+					goto parseError
+				}
+				commands.UnsubHandler(config.connectConf.Verbose, sid, config.channel)
 			default:
 				p.arg = append(p.arg, b)
 			}
