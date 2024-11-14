@@ -1,6 +1,7 @@
 package core
 
 import (
+	"errors"
 	"strconv"
 
 	"github.com/melsonic/gnats-server/constants"
@@ -80,6 +81,7 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 				p.state = OP_S
 			default:
 				// error
+				goto parseError
 			}
 		case OP_C:
 			switch b {
@@ -87,6 +89,7 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 				p.state = OP_CO
 			default:
 				// error
+				goto parseError
 			}
 		case OP_CO:
 			switch b {
@@ -94,6 +97,7 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 				p.state = OP_CON
 			default:
 				// error
+				goto parseError
 			}
 		case OP_CON:
 			switch b {
@@ -101,6 +105,7 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 				p.state = OP_CONN
 			default:
 				// error
+				goto parseError
 			}
 		case OP_CONN:
 			switch b {
@@ -108,6 +113,7 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 				p.state = OP_CONNE
 			default:
 				// error
+				goto parseError
 			}
 		case OP_CONNE:
 			switch b {
@@ -115,6 +121,7 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 				p.state = OP_CONNEC
 			default:
 				// error
+				goto parseError
 			}
 		case OP_CONNEC:
 			switch b {
@@ -122,6 +129,7 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 				p.state = OP_CONNECT
 			default:
 				// error
+				goto parseError
 			}
 		case OP_CONNECT:
 			switch b {
@@ -129,17 +137,18 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 				p.state = OP_CONNECT_ARG
 			default:
 				// error
+				goto parseError
 			}
 		case OP_CONNECT_ARG:
 			switch b {
 			case '\r':
 				// skip
 			case '\n':
-				// argument completed
 				p.state = OP_START
 				err := config.connectConf.SetUpConnect(p.arg)
 				if err != nil {
 					// error
+					goto parseError
 				}
 				commands.ConnectHandler(config.connectConf.Verbose, config.channel)
 			default:
@@ -153,6 +162,7 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 				p.state = OP_PU
 			default:
 				// error
+				goto parseError
 			}
 		case OP_S:
 			switch b {
@@ -160,6 +170,7 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 				p.state = OP_SU
 			default:
 				// error
+				goto parseError
 			}
 		case OP_PI:
 			switch b {
@@ -167,6 +178,7 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 				p.state = OP_PIN
 			default:
 				// error
+				goto parseError
 			}
 		case OP_PU:
 			switch b {
@@ -174,6 +186,7 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 				p.state = OP_PUB
 			default:
 				// error
+				goto parseError
 			}
 		case OP_SU:
 			switch b {
@@ -181,6 +194,7 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 				p.state = OP_SUB
 			default:
 				// error
+				goto parseError
 			}
 		case OP_PIN:
 			switch b {
@@ -188,6 +202,7 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 				p.state = OP_PING
 			default:
 				// error
+				goto parseError
 			}
 		case OP_PUB:
 			switch b {
@@ -197,6 +212,7 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 				p.state = OP_PUB_SUB
 			default:
 				// error
+				goto parseError
 			}
 		case OP_SUB:
 			switch b {
@@ -207,6 +223,7 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 				p.arg = nil
 			default:
 				// error
+				goto parseError
 			}
 		case OP_PING:
 			switch b {
@@ -217,6 +234,7 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 				commands.PingHandler(config.channel)
 			default:
 				// error
+				goto parseError
 			}
 		case OP_PUB_SUB:
 			switch b {
@@ -250,6 +268,7 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 				msgLen, err := strconv.Atoi(string(p.arg))
 				if err != nil {
 					// error
+					goto parseError
 				}
 				p.pubState.msgLen = msgLen
 				p.arg = nil
@@ -287,5 +306,9 @@ func (p *Parser) Parse(config *serverConfig, buffer []byte) error {
 			}
 		}
 	}
+
 	return nil
+	// raise parse error label
+parseError:
+	return errors.New("Error Parsing Input\r\n")
 }

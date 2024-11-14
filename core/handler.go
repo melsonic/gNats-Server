@@ -33,6 +33,10 @@ func Handler(conn net.Conn) {
 		if err == io.EOF {
 			break
 		}
-		parser.Parse(&config, buffer)
+		err = parser.Parse(&config, buffer)
+		if err != nil {
+			conn.Write([]byte(err.Error()))
+			break
+		}
 	}
 }
