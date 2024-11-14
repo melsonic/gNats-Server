@@ -3,10 +3,11 @@ package constants
 import "fmt"
 
 const (
-	PORT  string = "4222"
-	CR    byte   = byte('\r')
-	LF    byte   = byte('\n')
-	SPACE byte   = byte(' ')
+	PORT      string = "4222"
+	CR        byte   = byte('\r')
+	LF        byte   = byte('\n')
+	SPACE     byte   = byte(' ')
+	ZERO_BYTE byte   = 0
 
 	/// commands
 	CONNECT string = "CONNECT"

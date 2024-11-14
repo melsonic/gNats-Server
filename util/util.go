@@ -13,3 +13,9 @@ func SendInitialInfoMessage(conn net.Conn) {
 	var initialResponse string = fmt.Sprintf("INFO {\"host\":\"0.0.0.0\",\"port\":%s,\"max_payload\":1048576,\"client_ip\":\"%s\"}\n", constants.PORT, client_ip)
 	conn.Write([]byte(initialResponse))
 }
+
+func ResetBuffer(buffer []byte) {
+	for i := range buffer {
+		buffer[i] = 0
+	}
+}

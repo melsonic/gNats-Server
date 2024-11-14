@@ -1,28 +1,20 @@
 package commands
 
 import (
-	"net"
 	"strconv"
 
+	"github.com/melsonic/gnats-server/constants"
 	data "github.com/melsonic/gnats-server/data"
 )
 
-func HandleSub(conn net.Conn, args []string, channel chan string) bool {
-	if len(args) < 2 {
-		return false
-	}
-	subject := args[0]
-	sid, err := strconv.Atoi(args[1])
+func SubHandler(verbose bool, subject string, subjectid string, channel chan string) bool {
+	sid, err := strconv.Atoi(subjectid)
 	if err != nil {
 		return false
 	}
-	success := data.GSubjectSIDs.Add(subject, sid, channel)
-	var response string
-	if success {
-		response = "+OK\r\n"
-	} else {
-		response = "\r\n"
+	go data.GSubjectSIDs.Add(subject, sid, channel)
+	if verbose {
+		channel <- constants.RESPONSE_OK
 	}
-	conn.Write([]byte(response))
 	return true
 }

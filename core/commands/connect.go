@@ -1,11 +1,11 @@
 package commands
 
 import (
-	"net"
-
 	"github.com/melsonic/gnats-server/constants"
 )
 
-func HandleConnect(conn net.Conn) {
-	conn.Write([]byte(constants.RESPONSE_PONG))
+func ConnectHandler(verbose bool, channel chan string) {
+	if verbose {
+		channel <- constants.RESPONSE_OK
+	}
 }
