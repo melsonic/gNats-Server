@@ -1,0 +1,7 @@
+services:
+  gnats:
+    build: .
+    image: gnats-server-image
+    ports: 
+      - "4222:4222"
+    container_name: gnats-server

@@ -1,0 +1,6 @@
+tmp/*
+.git/
+.gitignore
+LICENSE
+*.md
+*.txt
