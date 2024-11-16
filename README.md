@@ -25,14 +25,14 @@
 - Scenerio: Two clients subscribed to the same subject
   <br/>
   <br/>
-  <img src="./public/two-client-subscribed-to-a-subject.png" />
+  <img src="./public/two-client.png" />
   <br/>
 
 - Here is the output of `nats bench` tool publishing **1 Million** messages of
   size 16 byte each.
   <br/>
   <br/>
-  <img src="./public/gnats-server-benchmark.png" />
+  <img src="./public/nats-bench.png" />
   <br/>
 
 #### Learnings & Notes
